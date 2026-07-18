@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PomoFocus Pro - Unbreakable Focus</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome for Premium Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"Space Grotesk"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Animations and Glassmorphism */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .glass-panel-dark {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .focus-locked-bg {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+      transition: background 1s ease-in-out;
+    }
+    .pomo-bg {
+      background: linear-gradient(135deg, #ba3c3c 0%, #991b1b 100%);
+      transition: background 0.8s ease;
+    }
+    .short-bg {
+      background: linear-gradient(135deg, #38bdf8 0%, #0369a1 100%);
+      transition: background 0.8s ease;
+    }
+    .long-bg {
+      background: linear-gradient(135deg, #34d399 0%, #047857 100%);
+      transition: background 0.8s ease;
+    }
+    /* Hide scrollbars but keep functionality */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Pulse focus locked glow */
+    @keyframes slow-pulse {
+      0%, 100% { opacity: 0.15; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(1.05); }
+    }
+    .pulse-glow {
+      animation: slow-pulse 8s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="h-full text-slate-100 font-sans pomo-bg overflow-x-hidden transition-all duration-1000" id="mainBody">
+
+  <!-- Locked Focus Mode Cover Overlay -->
+  <div id="lockedOverlay" class="fixed inset-0 z-50 flex-col items-center justify-center hidden bg-slate-950/95 backdrop-blur-2xl transition-all duration-700">
+    <!-- Pulsing ambient light in background -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-red-600/25 blur-[120px] pulse-glow"></div>
+      <div class="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-indigo-600/25 blur-[120px] pulse-glow" style="animation-delay: 3s;"></div>
+    </div>
+
+    <div class="relative z-10 max-w-md w-full px-6 text-center flex flex-col items-center justify-center">
+      <div class="relative mb-6">
+        <div class="w-24 h-24 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500 text-4xl animate-pulse">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+        <div class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center text-[10px] text-white font-bold animate-ping"></div>
+      </div>
+
+      <h2 class="text-3xl font-extrabold tracking-tight font-mono mb-2 text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-indigo-300">
+        FOCUS PROTOCOL ACTIVE
+      </h2>
+      <p class="text-slate-400 text-sm mb-8 leading-relaxed">
+        Strict Focus Mode is engaged. Your other web and app activities are blocked by system simulated focus lock. You cannot close this layout or change settings until completion.
+      </p>
+
+      <!-- Giant Lock Timer -->
+      <div class="glass-panel-dark px-8 py-6 rounded-3xl w-full mb-8 shadow-2xl border border-red-500/20">
+        <p class="text-xs uppercase tracking-widest text-slate-400 font-mono mb-1">Focusing On</p>
+        <p id="lockCurrentTaskName" class="text-lg font-semibold text-slate-200 mb-4 italic truncate">"No active task"</p>
+        
+        <div class="text-6xl font-extrabold font-mono tracking-widest text-white mb-2" id="lockTimerDisplay">
+          25:00
+        </div>
+        <div class="flex justify-center space-x-2 text-xs text-red-400 font-semibold mb-4 bg-red-500/10 py-1.5 px-3 rounded-full w-fit mx-auto">
+          <i class="fa-solid fa-shield-halved mt-0.5"></i>
+          <span>REDUCTION & STOP BLOCKED</span>
+        </div>
+
+        <div class="flex justify-center gap-3">
+          <button onclick="addOneMinute()" class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-indigo-500/20 active:scale-95 transition text-sm flex items-center justify-center gap-2 border border-indigo-400/20">
+            <i class="fa-solid fa-circle-plus"></i> Add +1 Min
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick reminder of the setup rules -->
+      <div class="text-xs text-slate-500 bg-slate-900/40 p-4 rounded-2xl w-full flex items-start gap-3 text-left border border-slate-800">
+        <i class="fa-solid fa-circle-info text-indigo-400 mt-0.5 text-base flex-shrink-0"></i>
+        <p>In adherence to strict focus science, you can only <strong>expand</strong> focus duration. Minimizing or attempting to reload this page is actively discouraged by this barrier.</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Main Application Frame -->
+  <div class="min-h-screen flex flex-col relative z-10">
+    
+    <!-- Top Nav Header -->
+    <header class="w-full max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shadow-inner">
+          <i class="fa-solid fa-fire text-lg text-white"></i>
+        </div>
+        <span class="text-xl font-black font-mono tracking-tight text-white">POMOFOCUS<span class="text-red-300 font-light">.pro</span></span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Dashboard Button -->
+        <button onclick="toggleModal('analyticsModal')" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold py-2 px-3 rounded-lg flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-chart-simple"></i>
+          <span class="hidden sm:inline">Stats</span>
+        </button>
+        <!-- Settings Trigger -->
+        <button onclick="toggleModal('settingsModal')" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold py-2 px-3 rounded-lg flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-sliders"></i>
+          <span class="hidden sm:inline">Settings</span>
+        </button>
+        <!-- Help Trigger -->
+        <button onclick="toggleModal('rulesModal')" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold py-2 px-3 rounded-lg flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-circle-question text-amber-300"></i>
+          <span class="hidden sm:inline">Rules</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="flex-1 w-full max-w-xl mx-auto px-4 py-4 flex flex-col justify-start gap-6">
+
+      <!-- Strict Focus Banner Alert if focus is active but not locked screen -->
+      <div id="strictRuleBanner" class="hidden bg-slate-950/40 border border-amber-500/20 rounded-2xl p-3 flex items-center justify-between text-xs transition duration-300">
+        <div class="flex items-center gap-2 text-amber-300">
+          <i class="fa-solid fa-triangle-exclamation text-sm animate-pulse"></i>
+          <span><strong>Strict Mode Rules active:</strong> No Pause/Stop/Decrease. Only +1 minute allowed.</span>
+        </div>
+        <button onclick="addOneMinute()" class="bg-amber-400/20 text-amber-300 px-2 py-1 rounded hover:bg-amber-400/30 font-bold font-mono transition">
+          +1 Min
+        </button>
+      </div>
+
+      <!-- TIMER PANEL -->
+      <section class="glass-panel rounded-3xl p-6 text-center relative overflow-hidden transition-all duration-300 shadow-xl border border-white/10">
+        
+        <!-- Tab Selectors -->
+        <div class="flex justify-center gap-2 mb-8 bg-black/15 p-1 rounded-xl w-full">
+          <button id="pomoTabBtn" onclick="setTimerMode('pomodoro')" class="flex-1 py-2 text-sm font-bold rounded-lg transition text-white bg-white/10 shadow-sm">
+            Pomodoro
+          </button>
+          <button id="shortTabBtn" onclick="setTimerMode('short')" class="flex-1 py-2 text-sm font-semibold rounded-lg transition text-white/70 hover:text-white">
+            Short Break
+          </button>
+          <button id="longTabBtn" onclick="setTimerMode('long')" class="flex-1 py-2 text-sm font-semibold rounded-lg transition text-white/70 hover:text-white">
+            Long Break
+          </button>
+        </div>
+
+        <!-- Big Timer Text -->
+        <div class="text-7xl sm:text-8xl font-black font-mono tracking-widest text-white select-none mb-4" id="mainTimerDisplay">
+          25:00
+        </div>
+
+        <!-- Session status counter -->
+        <p id="sessionCounter" class="text-xs text-white/60 mb-6 font-mono tracking-wider uppercase">
+          SESSION #1 • TIME TO FOCUS
+        </p>
+
+        <!-- Dynamic Locked Notification -->
+        <div id="strictControlIndicator" class="hidden flex items-center justify-center gap-2 text-red-200 text-xs font-semibold mb-6 animate-pulse">
+          <i class="fa-solid fa-lock"></i>
+          <span>STRICT LOCKDOWN ENGAGED</span>
+        </div>
+
+        <!-- Action Controls -->
+        <div class="flex flex-col items-center justify-center gap-3">
+          
+          <div class="flex items-center justify-center gap-4 w-full">
+            <!-- Reset Button: ONLY visible/active if timer NOT started -->
+            <button id="resetTimerBtn" onclick="resetTimer()" class="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center transition" title="Reset Mode">
+              <i class="fa-solid fa-arrow-rotate-right"></i>
+            </button>
+
+            <!-- Main Start Button -->
+            <button id="mainStartBtn" onclick="toggleTimer()" class="px-10 py-4 rounded-2xl bg-white text-slate-950 font-extrabold text-xl tracking-wider uppercase shadow-xl hover:bg-slate-100 active:scale-95 transition duration-200 flex items-center gap-2 min-w-[160px] justify-center">
+              <i class="fa-solid fa-play" id="startBtnIcon"></i>
+              <span id="startBtnText">START</span>
+            </button>
+
+            <!-- Plus 1 Min (Rule compliance) -->
+            <button onclick="addOneMinute()" class="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center transition" title="Add 1 minute (Always Allowed)">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+
+          <!-- Strict Lock Screen Switch -->
+          <div class="mt-4 flex items-center gap-3 bg-black/20 px-4 py-2 rounded-xl">
+            <span class="text-xs text-white/80 font-medium">Auto Lock Screen Overlay?</span>
+            <button onclick="toggleStrictLock()" id="strictToggleBtn" class="w-11 h-6 rounded-full bg-green-500 relative transition p-0.5 focus:outline-none">
+              <span id="strictToggleCircle" class="block w-5 h-5 rounded-full bg-white shadow-md transform translate-x-5 transition"></span>
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ACTIVE TASK SUMMARY -->
+      <div class="glass-panel rounded-2xl p-4 flex items-center justify-between border border-white/10">
+        <div class="flex items-center gap-3 overflow-hidden">
+          <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white flex-shrink-0">
+            <i class="fa-solid fa-compass"></i>
+          </div>
+          <div class="overflow-hidden">
+            <p class="text-xs text-white/60">Current Mission</p>
+            <p id="focusedTaskDisplay" class="font-bold text-sm truncate text-white">Focus on Pomodoro!</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <button onclick="tickActiveTask()" class="bg-white/20 hover:bg-white/30 text-white font-semibold py-1.5 px-3 rounded-lg text-xs flex items-center gap-1 active:scale-95 transition" title="Complete Active Task">
+            <i class="fa-solid fa-circle-check text-green-300"></i> Done
+          </button>
+        </div>
+      </div>
+
+      <!-- TASK MANAGER SECTION -->
+      <section class="flex-1 flex flex-col gap-3">
+        <div class="flex items-center justify-between px-1">
+          <h3 class="text-lg font-extrabold tracking-tight flex items-center gap-2">
+            <i class="fa-solid fa-list-check"></i> Tasks List
+          </h3>
+          <span id="taskCountBadge" class="text-xs font-mono font-bold bg-white/20 px-2 py-0.5 rounded-full">0/0</span>
+        </div>
+
+        <!-- Task Adding Input Card -->
+        <div class="glass-panel rounded-2xl p-4 border border-white/10">
+          <form id="taskForm" onsubmit="addTask(event)" class="flex flex-col gap-3">
+            <input type="text" id="taskTitle" required placeholder="What are you working on?" class="bg-black/20 text-white text-sm placeholder-white/40 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-white/30 transition">
+            
+            <div class="flex items-center justify-between gap-4">
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-white/70">Est. Pomodoros:</span>
+                <div class="flex items-center gap-1 bg-black/15 rounded-lg p-1">
+                  <button type="button" onclick="adjustEstPomo(-1)" class="w-6 h-6 rounded bg-white/5 hover:bg-white/10 text-white flex items-center justify-center text-xs font-bold">-</button>
+                  <span id="estPomoValue" class="text-xs font-bold font-mono px-2">1</span>
+                  <button type="button" onclick="adjustEstPomo(1)" class="w-6 h-6 rounded bg-white/5 hover:bg-white/10 text-white flex items-center justify-center text-xs font-bold">+</button>
+                </div>
+              </div>
+
+              <button type="submit" class="bg-white text-slate-950 hover:bg-slate-100 font-extrabold text-xs px-4 py-2.5 rounded-xl flex items-center gap-1 active:scale-95 transition">
+                <i class="fa-solid fa-plus"></i> Add Task
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Dynamic Tasks List -->
+        <div id="tasksListContainer" class="flex flex-col gap-2 max-h-72 overflow-y-auto no-scrollbar">
+          <!-- Dynamic Task Cards Render Here -->
+        </div>
+
+        <!-- Finished / Completed Tasks Toggle -->
+        <div class="mt-2">
+          <button onclick="toggleCompletedTasksSection()" class="text-xs text-white/50 hover:text-white flex items-center gap-1.5 transition">
+            <i id="toggleCompletedIcon" class="fa-solid fa-chevron-right text-[10px] transform transition"></i>
+            Show Completed Tasks (<span id="completedTasksCount">0</span>)
+          </button>
+          <div id="completedTasksContainer" class="hidden flex flex-col gap-2 mt-2">
+            <!-- Completed Task Cards Render Here -->
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full text-center py-6 border-t border-white/5 mt-auto bg-black/10">
+      <p class="text-xs text-white/40">© 2026 PomoFocus Pro • Strict Focus Enforcement Protocol</p>
+    </footer>
+
+  </div>
+
+
+  <!-- MODALS -->
+
+  <!-- Modal 1: Rules & Custom Guard Explanation -->
+  <div id="rulesModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-white/10 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+      <button onclick="toggleModal('rulesModal')" class="absolute top-4 right-4 text-white/60 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-circle-question"></i>
+        </div>
+        <h3 class="text-xl font-extrabold tracking-tight text-white">Focus Rules</h3>
+      </div>
+
+      <div class="text-slate-300 text-sm space-y-4 leading-relaxed">
+        <p>This is not your average loose Pomodoro timer. This is designed for unyielding productivity.</p>
+        
+        <div class="space-y-3 bg-black/20 p-4 rounded-2xl border border-white/5">
+          <div class="flex items-start gap-2">
+            <i class="fa-solid fa-ban text-red-400 mt-1 flex-shrink-0"></i>
+            <span><strong>No Stopping or Reducing:</strong> Once started, you cannot stop, pause, or reduce focus sessions. Time is committed.</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <i class="fa-solid fa-circle-plus text-green-400 mt-1 flex-shrink-0"></i>
+            <span><strong>Time Extension:</strong> Feeling extra inspired? You can extend your timer by exactly <strong>1 minute</strong> at any point to continue focused progress.</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <i class="fa-solid fa-shield text-indigo-400 mt-1 flex-shrink-0"></i>
+            <span><strong>Full Focus Lockdown Screen:</strong> Option to overlay a full block layout automatically during your active session to simulate full-screen focus blocking.</span>
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-400">Perfect for heavy procrastinators looking to build highly structured work routines. Once the section is completed, all regular interfaces and features unlock seamlessly.</p>
+      </div>
+
+      <button onclick="toggleModal('rulesModal')" class="w-full mt-6 bg-white hover:bg-slate-100 text-slate-950 font-bold py-3 rounded-xl transition">
+        I Understand
+      </button>
+    </div>
+  </div>
+
+
+  <!-- Modal 2: Custom Settings -->
+  <div id="settingsModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-white/10 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+      <button onclick="toggleModal('settingsModal')" class="absolute top-4 right-4 text-white/60 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-sliders"></i>
+        </div>
+        <h3 class="text-xl font-extrabold tracking-tight text-white">Timer Configurations</h3>
+      </div>
+
+      <!-- Settings Inputs -->
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Duration (Minutes)</label>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <span class="block text-[10px] text-slate-500 mb-1">Pomodoro</span>
+              <input type="number" id="pomoSetting" value="25" min="1" max="120" class="w-full bg-slate-850 border border-slate-700 rounded-lg p-2 text-sm text-center text-white focus:outline-none focus:border-indigo-500">
+            </div>
+            <div>
+              <span class="block text-[10px] text-slate-500 mb-1">Short Break</span>
+              <input type="number" id="shortSetting" value="5" min="1" max="120" class="w-full bg-slate-850 border border-slate-700 rounded-lg p-2 text-sm text-center text-white focus:outline-none focus:border-indigo-500">
+            </div>
+            <div>
+              <span class="block text-[10px] text-slate-500 mb-1">Long Break</span>
+              <input type="number" id="longSetting" value="15" min="1" max="120" class="w-full bg-slate-850 border border-slate-700 rounded-lg p-2 text-sm text-center text-white focus:outline-none focus:border-indigo-500">
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-slate-800">
+
+        <!-- Alarm Sound Options -->
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Completion Alarm Voice</label>
+          <div class="flex gap-2">
+            <select id="voiceChoice" class="flex-1 bg-slate-800 border border-slate-700 rounded-xl p-2 text-sm text-white focus:outline-none">
+              <option value="Zephyr">Zephyr (Cheerful)</option>
+              <option value="Kore" selected>Kore (Focused / Standard)</option>
+              <option value="Puck">Puck (Energetic)</option>
+              <option value="Erinome">Erinome (Calm / Whispering)</option>
+            </select>
+            <button onclick="testVoiceSynthesis()" class="bg-indigo-600/30 text-indigo-300 border border-indigo-500/20 px-3 py-2 rounded-xl text-sm font-semibold hover:bg-indigo-600/40 transition">
+              Test Speech
+            </button>
+          </div>
+        </div>
+
+        <!-- Strict Rules Reminder inside Settings -->
+        <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-xs text-red-300">
+          <p class="font-bold flex items-center gap-1 mb-1">
+            <i class="fa-solid fa-circle-exclamation"></i> Note on Configurations
+          </p>
+          Updating custom durations only applies to upcoming sessions, not current active locks.
+        </div>
+      </div>
+
+      <button onclick="saveSettings()" class="w-full mt-6 bg-white hover:bg-slate-100 text-slate-950 font-bold py-3 rounded-xl transition">
+        Save Configurations
+      </button>
+    </div>
+  </div>
+
+
+  <!-- Modal 3: Productivity Analytics & Focus stats -->
+  <div id="analyticsModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-white/10 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+      <button onclick="toggleModal('analyticsModal')" class="absolute top-4 right-4 text-white/60 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-300 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <h3 class="text-xl font-extrabold tracking-tight text-white">Focus Intelligence</h3>
+      </div>
+
+      <!-- Quick stats grids -->
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="bg-slate-850 p-4 rounded-2xl border border-slate-800 text-center">
+          <p class="text-xs text-slate-400 mb-1">Focused Today</p>
+          <p id="totalFocusMinutesDisplay" class="text-3xl font-extrabold font-mono text-indigo-400">0m</p>
+        </div>
+        <div class="bg-slate-850 p-4 rounded-2xl border border-slate-800 text-center">
+          <p class="text-xs text-slate-400 mb-1">Finished Tasks</p>
+          <p id="totalFinishedTasksDisplay" class="text-3xl font-extrabold font-mono text-green-400">0</p>
+        </div>
+        <div class="bg-slate-850 p-4 rounded-2xl border border-slate-800 text-center">
+          <p class="text-xs text-slate-400 mb-1">Focus Sessions</p>
+          <p id="totalFinishedSessionsDisplay" class="text-3xl font-extrabold font-mono text-amber-400">0</p>
+        </div>
+        <div class="bg-slate-850 p-4 rounded-2xl border border-slate-800 text-center">
+          <p class="text-xs text-slate-400 mb-1">Streak Count</p>
+          <p id="streakCountDisplay" class="text-3xl font-extrabold font-mono text-rose-400">1</p>
+        </div>
+      </div>
+
+      <!-- Virtual Trophy System -->
+      <div class="bg-indigo-950/40 p-4 rounded-2xl border border-indigo-500/10 flex items-center gap-3">
+        <span class="text-3xl">🏆</span>
+        <div>
+          <p class="text-xs text-indigo-300 font-bold uppercase tracking-wider">Unbreakable Badge</p>
+          <p class="text-xs text-slate-400">Earned by keeping focus uninterrupted and strictly locked without aborting.</p>
+        </div>
+      </div>
+
+      <button onclick="toggleModal('analyticsModal')" class="w-full mt-6 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl transition">
+        Close Analytics
+      </button>
+    </div>
+  </div>
+
+
+  <!-- Notification Alert Box (Replacing default alert) -->
+  <div id="notificationAlert" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-slate-900 border border-slate-800 text-white px-6 py-4 rounded-2xl shadow-2xl hidden flex items-center gap-3 animate-bounce">
+    <div class="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-sm flex-shrink-0">
+      <i class="fa-solid fa-bell"></i>
+    </div>
+    <div>
+      <h5 class="text-xs font-bold uppercase text-slate-400 tracking-wider">PomoFocus Notification</h5>
+      <p id="notificationText" class="text-sm text-slate-200">Alert text here!</p>
+    </div>
+  </div>
+
+
+  <!-- Inline Scripts and Logic -->
+  <script>
+    // System Config / Storage
+    const apiKey = ""; // Keep empty for runtime configuration
+
+    // Initial state setup
+    let state = {
+      pomoMinutes: 25,
+      shortMinutes: 5,
+      longMinutes: 15,
+      
+      currentMode: 'pomodoro', // 'pomodoro' | 'short' | 'long'
+      timerDurationSec: 25 * 60,
+      timerRemainingSec: 25 * 60,
+      
+      timerInterval: null,
+      isTimerRunning: false,
+      isStrictLockActive: true, // System setting to overlay automatically on Pomodoro start
+      
+      tasks: [],
+      estPomoCounter: 1,
+      focusedTaskId: null,
+      
+      // Tracking/Analytics metrics
+      totalFocusMinutes: 0,
+      totalFinishedTasks: 0,
+      totalFinishedSessions: 0,
+      streakCount: 1,
+    };
+
+    // Initialize application values on load
+    window.onload = function() {
+      // Default initial tasks list loaded
+      state.tasks = [
+        { id: '1', title: 'Plan and review my daily main targets', targetPomo: 1, completedPomo: 0, completed: false },
+        { id: '2', title: 'Deep work focus block #1', targetPomo: 2, completedPomo: 0, completed: false },
+      ];
+      
+      renderTasks();
+      updateTimerDisplay();
+      
+      // Initial background updates
+      updateUIForMode();
+    };
+
+    // Sound FX Generation using Web Audio API for custom alerts
+    function playBeep(frequency, duration) {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        oscillator.type = 'sine';
+        oscillator.frequency.value = frequency; // in hertz
+        
+        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.05);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + duration);
+      } catch (err) {
+        console.warn("Web Audio API not supported/activated on this context.", err);
+      }
+    }
+
+    // Interactive Audio Text-to-Speech call leveraging Gemini-preview tts behavior simulated locally or native speech synthesis fallback
+    function triggerVoiceAlert(message) {
+      if ('speechSynthesis' in window) {
+        // Find configuration voice choice or fallback
+        const selectedVoiceName = document.getElementById('voiceChoice')?.value || 'Kore';
+        
+        const utterance = new SpeechSynthesisUtterance(message);
+        utterance.rate = 1.0;
+        utterance.pitch = 1.1;
+        
+        // Pick an English voice
+        const voices = window.speechSynthesis.getVoices();
+        const englishVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
+        if (englishVoice) {
+          utterance.voice = englishVoice;
+        }
+
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    // Sound Alarm Combo
+    function playAlertCombo() {
+      playBeep(523.25, 0.4); // C5
+      setTimeout(() => playBeep(659.25, 0.4), 150); // E5
+      setTimeout(() => playBeep(783.99, 0.5), 300); // G5
+      
+      // Voice alert after tones
+      setTimeout(() => {
+        const modeName = state.currentMode === 'pomodoro' ? 'Focus Session' : 'Relaxation Break';
+        triggerVoiceAlert(`Your ${modeName} is complete! Outstanding work, you can now rest or select your next action.`);
+      }, 700);
+    }
+
+    // Modal Control Handler
+    function toggleModal(modalId) {
+      // Disallow setting changes while focus is running and locked screen is active
+      if (state.isTimerRunning && state.currentMode === 'pomodoro' && (modalId === 'settingsModal')) {
+        showLocalNotification("Configurations are locked during active sessions!");
+        return;
+      }
+      
+      const modal = document.getElementById(modalId);
+      if (modal.classList.contains('hidden')) {
+        modal.classList.remove('hidden');
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    // Custom Alert Indicator (Avoid system alert blocks)
+    function showLocalNotification(text) {
+      const alertBox = document.getElementById('notificationAlert');
+      const textBox = document.getElementById('notificationText');
+      textBox.innerText = text;
+      
+      alertBox.classList.remove('hidden');
+      playBeep(440, 0.25); // Simple tone trigger
+      
+      setTimeout(() => {
+        alertBox.classList.add('hidden');
+      }, 4000);
+    }
+
+    // Tab and Mode Selection Engine
+    function setTimerMode(mode) {
+      if (state.isTimerRunning) {
+        showLocalNotification("Focus mode locked! You cannot switch modes during an active session.");
+        return;
+      }
+      
+      state.currentMode = mode;
+      
+      // Update durations based on state setting variables
+      if (mode === 'pomodoro') {
+        state.timerDurationSec = state.pomoMinutes * 60;
+      } else if (mode === 'short') {
+        state.timerDurationSec = state.shortMinutes * 60;
+      } else if (mode === 'long') {
+        state.timerDurationSec = state.longMinutes * 60;
+      }
+      
+      state.timerRemainingSec = state.timerDurationSec;
+      updateTimerDisplay();
+      updateUIForMode();
+    }
+
+    // Updates Theme styling dynamically based on mode
+    function updateUIForMode() {
+      const body = document.getElementById('mainBody');
+      const resetBtn = document.getElementById('resetTimerBtn');
+      
+      // Setup buttons
+      const pomoTab = document.getElementById('pomoTabBtn');
+      const shortTab = document.getElementById('shortTabBtn');
+      const longTab = document.getElementById('longTabBtn');
+      
+      // Clear active style states
+      [pomoTab, shortTab, longTab].forEach(btn => {
+        btn.className = "flex-1 py-2 text-sm font-semibold rounded-lg transition text-white/70 hover:text-white";
+      });
+
+      // Reset base themes
+      body.className = "h-full text-slate-100 font-sans overflow-x-hidden transition-all duration-1000 " + 
+                       (state.currentMode === 'pomodoro' ? 'pomo-bg' : (state.currentMode === 'short' ? 'short-bg' : 'long-bg'));
+
+      if (state.currentMode === 'pomodoro') {
+        pomoTab.className = "flex-1 py-2 text-sm font-bold rounded-lg transition text-slate-900 bg-white shadow-sm";
+        document.getElementById('sessionCounter').innerText = "SESSION • COMMITTED FOCUS";
+      } else if (state.currentMode === 'short') {
+        shortTab.className = "flex-1 py-2 text-sm font-bold rounded-lg transition text-slate-900 bg-white shadow-sm";
+        document.getElementById('sessionCounter').innerText = "REST • WELL-DESERVED RECOVERY";
+      } else if (state.currentMode === 'long') {
+        longTab.className = "flex-1 py-2 text-sm font-bold rounded-lg transition text-slate-900 bg-white shadow-sm";
+        document.getElementById('sessionCounter').innerText = "BREAK • SYSTEM RESET";
+      }
+
+      // Lock buttons if focusing
+      if (state.isTimerRunning) {
+        resetBtn.classList.add('opacity-40', 'cursor-not-allowed');
+        resetBtn.disabled = true;
+      } else {
+        resetBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+        resetBtn.disabled = false;
+      }
+    }
+
+    // Settings Application Controller
+    function saveSettings() {
+      const pomoVal = parseInt(document.getElementById('pomoSetting').value) || 25;
+      const shortVal = parseInt(document.getElementById('shortSetting').value) || 5;
+      const longVal = parseInt(document.getElementById('longSetting').value) || 15;
+
+      state.pomoMinutes = pomoVal;
+      state.shortMinutes = shortVal;
+      state.longMinutes = longVal;
+
+      showLocalNotification("Settings updated successfully!");
+      toggleModal('settingsModal');
+      
+      // Reset current active if not running
+      if (!state.isTimerRunning) {
+        setTimerMode(state.currentMode);
+      }
+    }
+
+    // Toggle Lock Switch
+    function toggleStrictLock() {
+      state.isStrictLockActive = !state.isStrictLockActive;
+      const btn = document.getElementById('strictToggleBtn');
+      const circle = document.getElementById('strictToggleCircle');
+      
+      if (state.isStrictLockActive) {
+        btn.className = "w-11 h-6 rounded-full bg-green-500 relative transition p-0.5 focus:outline-none";
+        circle.className = "block w-5 h-5 rounded-full bg-white shadow-md transform translate-x-5 transition";
+      } else {
+        btn.className = "w-11 h-6 rounded-full bg-slate-600 relative transition p-0.5 focus:outline-none";
+        circle.className = "block w-5 h-5 rounded-full bg-white shadow-md transform translate-x-0 transition";
+      }
+    }
+
+    // Start/Commit Timer Logic (Rule enforced: No toggle-off/stopping allowed during Pomodoro focus)
+    function toggleTimer() {
+      if (state.isTimerRunning) {
+        // ENFORCE EXCLUSIVE PROMPT RULE: Cannot stop/pause/reduce focus session once started!
+        if (state.currentMode === 'pomodoro') {
+          showLocalNotification("🚫 STRICT RULE: Pomodoro sessions cannot be paused or stopped! Extend with +1 Min instead.");
+          playBeep(220, 0.4); // Error sound
+          return;
+        } else {
+          // Breaks can be paused/skipped normally if desired
+          pauseTimer();
+        }
+      } else {
+        startTimer();
+      }
+    }
+
+    // Start execution
+    function startTimer() {
+      state.isTimerRunning = true;
+      
+      // Update UI button icons
+      document.getElementById('startBtnIcon').className = state.currentMode === 'pomodoro' ? "fa-solid fa-lock" : "fa-solid fa-pause";
+      document.getElementById('startBtnText').innerText = state.currentMode === 'pomodoro' ? "STRICT LOCK" : "PAUSE";
+      
+      // Apply Lock indicators
+      if (state.currentMode === 'pomodoro') {
+        document.getElementById('strictControlIndicator').classList.remove('hidden');
+        document.getElementById('strictRuleBanner').classList.remove('hidden');
+        
+        // Engaged Locked overlay option
+        if (state.isStrictLockActive) {
+          triggerLockedOverlay(true);
+        }
+      }
+
+      updateUIForMode();
+
+      state.timerInterval = setInterval(() => {
+        if (state.timerRemainingSec > 0) {
+          state.timerRemainingSec--;
+          updateTimerDisplay();
+        } else {
+          completeTimerSession();
+        }
+      }, 1000);
+    }
+
+    // Pause timer (only for break modes)
+    function pauseTimer() {
+      state.isTimerRunning = false;
+      clearInterval(state.timerInterval);
+      
+      document.getElementById('startBtnIcon').className = "fa-solid fa-play";
+      document.getElementById('startBtnText').innerText = "START";
+      
+      updateUIForMode();
+    }
+
+    // Reset Timer (only if not currently active)
+    function resetTimer() {
+      if (state.isTimerRunning) {
+        showLocalNotification("Cannot reset while active!");
+        return;
+      }
+      setTimerMode(state.currentMode);
+    }
+
+    // ENFORCED STRICT RULE: Add 1 Minute (Only modification permitted)
+    function addOneMinute() {
+      state.timerRemainingSec += 60;
+      state.timerDurationSec += 60;
+      
+      updateTimerDisplay();
+      showLocalNotification("⏳ Time extended by 1 minute!");
+      playBeep(440, 0.15); // Confirmation sound
+    }
+
+    // Main Counter Display updater
+    function updateTimerDisplay() {
+      const mins = Math.floor(state.timerRemainingSec / 60);
+      const secs = state.timerRemainingSec % 60;
+      
+      const formatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      
+      document.getElementById('mainTimerDisplay').innerText = formatted;
+      document.getElementById('lockTimerDisplay').innerText = formatted;
+      
+      // Dynamic Tab Title Progress
+      document.title = `(${formatted}) PomoFocus Pro`;
+    }
+
+    // Timer completed
+    function completeTimerSession() {
+      clearInterval(state.timerInterval);
+      state.isTimerRunning = false;
+      
+      // Handle Stats
+      if (state.currentMode === 'pomodoro') {
+        state.totalFocusMinutes += Math.round(state.timerDurationSec / 60);
+        state.totalFinishedSessions += 1;
+        
+        // Track task pomodoro counter
+        if (state.focusedTaskId) {
+          const task = state.tasks.find(t => t.id === state.focusedTaskId);
+          if (task) {
+            task.completedPomo++;
+            renderTasks();
+          }
+        }
+      }
+
+      // Reset Controls UI
+      document.getElementById('startBtnIcon').className = "fa-solid fa-play";
+      document.getElementById('startBtnText').innerText = "START";
+      
+      // Hide strict guards
+      document.getElementById('strictControlIndicator').classList.add('hidden');
+      document.getElementById('strictRuleBanner').classList.add('hidden');
+      
+      // Unveil the app if it was locked overlay
+      triggerLockedOverlay(false);
+      
+      // Sound alert logic
+      playAlertCombo();
+      
+      // Update default next action based on transition
+      if (state.currentMode === 'pomodoro') {
+        // Suggest break
+        setTimerMode('short');
+      } else {
+        setTimerMode('pomodoro');
+      }
+      
+      updateAnalyticsUI();
+    }
+
+    // Strict Mode Overlay Toggle
+    function triggerLockedOverlay(show) {
+      const overlay = document.getElementById('lockedOverlay');
+      
+      if (show) {
+        // Bind current focus task details
+        let taskText = "Main focus routine";
+        if (state.focusedTaskId) {
+          const task = state.tasks.find(t => t.id === state.focusedTaskId);
+          if (task) taskText = task.title;
+        }
+        document.getElementById('lockCurrentTaskName').innerText = `"${taskText}"`;
+        
+        overlay.classList.remove('hidden');
+        overlay.classList.add('flex');
+        
+        // Trigger motivational voice clip
+        triggerVoiceAlert("Focus mode locked. Time is strictly guarded. Keep working.");
+      } else {
+        overlay.classList.remove('flex');
+        overlay.classList.add('hidden');
+      }
+    }
+
+
+    /* TASK MANAGEMENT CONTROLLERS */
+
+    // Estimated pomodoros controller UI
+    function adjustEstPomo(amount) {
+      const current = state.estPomoCounter;
+      const target = current + amount;
+      if (target >= 1 && target <= 12) {
+        state.estPomoCounter = target;
+        document.getElementById('estPomoValue').innerText = target;
+      }
+    }
+
+    // Add task
+    function addTask(event) {
+      event.preventDefault();
+      
+      const titleInput = document.getElementById('taskTitle');
+      const title = titleInput.value.trim();
+      if (!title) return;
+
+      const newTask = {
+        id: Date.now().toString(),
+        title: title,
+        targetPomo: state.estPomoCounter,
+        completedPomo: 0,
+        completed: false
+      };
+
+      state.tasks.push(newTask);
+      
+      // Auto select as focused if none set
+      if (!state.focusedTaskId) {
+        selectTask(newTask.id);
+      }
+
+      // Reset Add Form
+      titleInput.value = '';
+      state.estPomoCounter = 1;
+      document.getElementById('estPomoValue').innerText = '1';
+      
+      renderTasks();
+      showLocalNotification("Task added successfully!");
+    }
+
+    // Render Tasks items
+    function renderTasks() {
+      const container = document.getElementById('tasksListContainer');
+      const completedContainer = document.getElementById('completedTasksContainer');
+      
+      container.innerHTML = '';
+      completedContainer.innerHTML = '';
+      
+      let activeCount = 0;
+      let completedCount = 0;
+
+      state.tasks.forEach(task => {
+        if (!task.completed) {
+          activeCount++;
+          
+          const isFocused = state.focusedTaskId === task.id;
+          
+          const card = document.createElement('div');
+          card.className = `flex items-center justify-between p-4 rounded-xl transition border cursor-pointer ${
+            isFocused 
+              ? 'bg-white/15 border-white/30 shadow-md ring-1 ring-white/10' 
+              : 'bg-black/10 hover:bg-black/20 border-white/5'
+          }`;
+          
+          // Tap card to focus task
+          card.onclick = (e) => {
+            // Guard to make sure clicking inner check button doesn't trigger selection toggle
+            if (e.target.closest('.action-button')) return;
+            selectTask(task.id);
+          };
+
+          card.innerHTML = `
+            <div class="flex items-center gap-3 overflow-hidden mr-2">
+              <button onclick="toggleTaskComplete('${task.id}')" class="action-button w-5 h-5 rounded-md border-2 border-white/30 flex items-center justify-center hover:border-white text-transparent hover:text-white/40 transition flex-shrink-0">
+                <i class="fa-solid fa-check text-[10px]"></i>
+              </button>
+              <div class="truncate">
+                <p class="text-sm font-semibold text-white truncate ${isFocused ? 'font-bold' : ''}">${task.title}</p>
+                <p class="text-[10px] text-white/50 font-mono">Pomos: ${task.completedPomo}/${task.targetPomo}</p>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-2 flex-shrink-0">
+              ${isFocused ? '<span class="text-[10px] bg-red-400/20 text-red-200 border border-red-400/30 font-extrabold px-1.5 py-0.5 rounded uppercase">Focusing</span>' : ''}
+              <button onclick="deleteTask('${task.id}')" class="action-button text-white/30 hover:text-red-400 p-1 text-xs transition">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          `;
+          container.appendChild(card);
+        } else {
+          completedCount++;
+          
+          // Completed task card style
+          const card = document.createElement('div');
+          card.className = "flex items-center justify-between p-3 rounded-xl bg-black/20 border border-white/5 opacity-60";
+          card.innerHTML = `
+            <div class="flex items-center gap-3 overflow-hidden">
+              <button onclick="toggleTaskComplete('${task.id}')" class="w-5 h-5 rounded-md bg-green-500/20 border border-green-400/40 flex items-center justify-center text-green-300 flex-shrink-0">
+                <i class="fa-solid fa-check text-[10px]"></i>
+              </button>
+              <div class="truncate line-through text-white/60">
+                <p class="text-xs font-semibold truncate">${task.title}</p>
+                <p class="text-[9px] font-mono">Completed in ${task.completedPomo || 1} Pomos</p>
+              </div>
+            </div>
+            
+            <button onclick="deleteTask('${task.id}')" class="text-white/20 hover:text-red-400 p-1 text-xs transition">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          `;
+          completedContainer.appendChild(card);
+        }
+      });
+
+      // Update counters
+      document.getElementById('taskCountBadge').innerText = `${state.tasks.filter(t => t.completed).length}/${state.tasks.length}`;
+      document.getElementById('completedTasksCount').innerText = completedCount;
+      
+      // If active is empty, show a fallback message
+      if (activeCount === 0) {
+        container.innerHTML = `
+          <div class="text-center p-6 bg-black/10 rounded-2xl border border-dashed border-white/10 text-white/40 text-xs">
+            No pending tasks. Assign a goal above to get started!
+          </div>
+        `;
+      }
+      
+      updateAnalyticsUI();
+    }
+
+    // Toggle complete checklist item
+    function toggleTaskComplete(id) {
+      const task = state.tasks.find(t => t.id === id);
+      if (task) {
+        task.completed = !task.completed;
+        
+        // Trigger micro congrats sounds
+        if (task.completed) {
+          playBeep(587.33, 0.25); // D5
+          state.totalFinishedTasks++;
+        }
+        
+        // If current focused task got ticked, auto-select next available task
+        if (id === state.focusedTaskId) {
+          state.focusedTaskId = null;
+          const remaining = state.tasks.find(t => !t.completed);
+          if (remaining) {
+            selectTask(remaining.id);
+          } else {
+            selectTask(null);
+          }
+        }
+        
+        renderTasks();
+      }
+    }
+
+    // Selected Focused target task setter
+    function selectTask(id) {
+      state.focusedTaskId = id;
+      const focusedTaskDisplay = document.getElementById('focusedTaskDisplay');
+      
+      if (id) {
+        const task = state.tasks.find(t => t.id === id);
+        if (task) {
+          focusedTaskDisplay.innerText = task.title;
+          focusedTaskDisplay.className = "font-bold text-sm truncate text-white";
+        }
+      } else {
+        focusedTaskDisplay.innerText = "Focus on Pomodoro!";
+        focusedTaskDisplay.className = "font-bold text-sm truncate text-white/50 italic";
+      }
+      
+      // Update locked screen display if currently active
+      if (state.isTimerRunning && state.isStrictLockActive) {
+        let taskText = "Main focus routine";
+        if (id) {
+          const task = state.tasks.find(t => t.id === id);
+          if (task) taskText = task.title;
+        }
+        document.getElementById('lockCurrentTaskName').innerText = `"${taskText}"`;
+      }
+      
+      renderTasks();
+    }
+
+    // Tick active/focused task instantly from the dynamic bar
+    function tickActiveTask() {
+      if (state.focusedTaskId) {
+        toggleTaskComplete(state.focusedTaskId);
+        showLocalNotification("🏆 Current active task marked complete!");
+      } else {
+        showLocalNotification("Assign and select a task from the list below first!");
+      }
+    }
+
+    // Delete task
+    function deleteTask(id) {
+      state.tasks = state.tasks.filter(t => t.id !== id);
+      if (state.focusedTaskId === id) {
+        state.focusedTaskId = null;
+        const next = state.tasks.find(t => !t.completed);
+        selectTask(next ? next.id : null);
+      }
+      renderTasks();
+    }
+
+    // Toggle completed sections list visible
+    function toggleCompletedTasksSection() {
+      const element = document.getElementById('completedTasksContainer');
+      const icon = document.getElementById('toggleCompletedIcon');
+      
+      if (element.classList.contains('hidden')) {
+        element.classList.remove('hidden');
+        icon.classList.add('rotate-90');
+      } else {
+        element.classList.add('hidden');
+        icon.classList.remove('rotate-90');
+      }
+    }
+
+    // Updates live Analytics views
+    function updateAnalyticsUI() {
+      document.getElementById('totalFocusMinutesDisplay').innerText = `${state.totalFocusMinutes}m`;
+      document.getElementById('totalFinishedTasksDisplay').innerText = state.totalFinishedTasks;
+      document.getElementById('totalFinishedSessionsDisplay').innerText = state.totalFinishedSessions;
+      
+      // Auto streak logic simulation
+      const baseStreak = state.totalFinishedSessions > 0 ? Math.ceil(state.totalFinishedSessions / 2) : 1;
+      document.getElementById('streakCountDisplay').innerText = baseStreak;
+    }
+
+    // Speech synthesize demo for testing
+    function testVoiceSynthesis() {
+      triggerVoiceAlert("Test successful. Your attention protocol is fully calibrated!");
+    }
+  </script>
+
+</body>
+</html>
